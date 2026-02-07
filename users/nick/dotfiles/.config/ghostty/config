@@ -1,0 +1,23 @@
+# Theme
+background-opacity = 0.95
+background-blur = 20
+
+# Infinite scrollback
+scrollback-limit = 10_000_000_000
+
+# Quick terminal
+keybind = global:cmd+shift+grave_accent=toggle_quick_terminal
+
+# Fix CPU issue in Linux
+#async-backend = epoll
+
+# Fix border when window size is not a multiple of cell size
+window-padding-balance = true
+window-padding-color = extend
+
+# Claude Code
+keybind = shift+enter=text:\n
+
+# Disable warnings
+clipboard-paste-protection = false
+confirm-close-surface = false
