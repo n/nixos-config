@@ -1,6 +1,6 @@
 { hostname, ... }:
 let
-  keys = import ../../common/keys.nix;
+  keys = import ../../data/keys.nix;
 in
 {
   programs.git = {
@@ -8,6 +8,7 @@ in
     signing = {
       key = keys.nick.${hostname};
       signByDefault = true;
+      format = null;
     };
     settings = {
       user = {

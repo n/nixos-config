@@ -9,80 +9,26 @@
   ];
 
   networking.hostName = "north";
-  networking.firewall.enable = false;
-  time.timeZone = "America/New_York";
 
-  # Lanzaboote.
-  boot.loader.systemd-boot.enable = lib.mkForce false;
-  boot.lanzaboote = {
-    enable = true;
-    pkiBundle = "/var/lib/sbctl";
-  };
-
-  # Use systemd-based initrd (stage-1); needed for common TPM2/LUKS auto-unlock setups (systemd-cryptenroll/cryptsetup units).
-  boot.initrd.systemd.enable = true;
-
-  # Allow NixOS to write UEFI firmware (NVRAM) boot entries during installs/rebuilds
-  # (e.g., create/update the “NixOS” entry in the BIOS boot menu / sometimes boot order).
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # Latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  # Enable flakes.
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
-
-  # Base system packages.
-  environment.systemPackages = with pkgs; [
-    btrfs-progs
-    ghostty.terminfo
-    lm_sensors
-    sbctl
-    tmux
-    vim
-  ];
-  environment.variables = {
-    EDITOR = "vim";
-  };
-
-  # Enable cron.
-  services.cron.enable = true;
-
-  # Enable OpenSSH.
-  services.openssh.enable = true;
-  services.openssh.settings.PermitRootLogin = "yes";
-  # Required for ShellFish shell integration.
-  services.openssh.extraConfig = ''
-    AcceptEnv LANG LC_*
+  # Disable broken USB4 port 5 to stop endless retry spam.
+  boot.initrd.services.udev.rules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{busnum}=="4", ATTR{devnum}=="1", RUN+="/bin/sh -c 'echo 1 > /sys$devpath/4-0:1.0/usb4-port5/disable'"
   '';
 
-  # Enable Tailscale.
-  services.tailscale = {
-    enable = true;
-    extraSetFlags = [ "--accept-routes" ];
-  };
-
-  # Enable Docker and Podman.
-  virtualisation.docker.enable = true;
-  virtualisation.podman = {
-    enable = true;
-    dockerCompat = false;
-  };
-
-  # Enable Ollama with ROCm backend.
-  services.ollama = {
-    enable = true;
-    package = pkgs.ollama-rocm;
-  };
+  # Host-specific package(s) beyond the shared base set.
+  environment.systemPackages = with pkgs; [
+    bubblewrap
+  ];
 
   # Force Linux Wi-Fi regulatory domain (country rules for allowed channels/tx power).
   # Added while troubleshooting Wi-Fi 6E / 6 GHz.
   boot.extraModprobeConfig = ''
     options cfg80211 ieee80211_regdom=US
   '';
+
+  # Shorten dhcpcd stop timeout to avoid 90s stall during shutdown
+  # (dhcpcd hangs trying to release the lease after wpa_supplicant is already down).
+  systemd.services.dhcpcd.serviceConfig.TimeoutStopSec = 5;
 
   # Wi-Fi configuration.
   networking.wireless = {
@@ -99,6 +45,9 @@
   # Enable nix-ld for running unpatched dynamic binaries on NixOS.
   # See: https://github.com/nix-community/nix-ld
   programs.nix-ld.enable = true;
+
+  # Enable Fish shell.
+  programs.fish.enable = true;
 
   # Enable graphics.
   hardware.graphics = {
@@ -172,8 +121,4 @@
       randomEncryption.enable = true;
     }
   ];
-
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  system.stateVersion = "24.11"; # Did you read the comment?
 }

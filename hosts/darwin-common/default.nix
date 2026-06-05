@@ -8,9 +8,14 @@
 }:
 
 {
+  nix.package = pkgs.nixVersions.latest;
+
   environment.systemPackages = with pkgs; [
-    vim
+    rsync
     tmux
+    vim
+    watch
+    osv-scanner
   ];
   environment.variables = {
     EDITOR = "vim";
@@ -23,6 +28,7 @@
       autoUpdate = true;
       upgrade = true;
       cleanup = "zap";
+      extraFlags = [ "--force-cleanup" ];
     };
 
     brews = [
@@ -32,30 +38,26 @@
     casks = [
       "chatgpt"
       "claude"
-      "claude-code"
-      "clickup"
       "codex-app"
       "container"
       "cursor"
       "discord"
-      "figma"
       "firefox"
-      "front"
       "ghostty"
       "github"
       "google-chrome"
-      "linear-linear"
+      "linear"
       "netnewswire"
       "obsidian"
-      "ollama-app"
-      "postman"
       "raspberry-pi-imager"
       "syncthing-app"
       "visual-studio-code"
+      "yaak"
       "zoom"
     ]
     ++ lib.optionals (hostname == "mbp") [
       "icon-composer"
+      "minecraft"
       "steam"
     ]
     ++ lib.optionals (hostname == "mini") [
@@ -67,8 +69,6 @@
 
     masApps = {
       "1Password 7" = 1333542190;
-      "AdGuard for Safari" = 1440147259;
-      "Flock" = 883594849;
       "Microsoft Excel" = 462058435;
       "Microsoft PowerPoint" = 462062816;
       "Microsoft Word" = 462054704;
@@ -86,6 +86,9 @@
     };
   };
 
+  system.keyboard.enableKeyMapping = true;
+  system.keyboard.remapCapsLockToEscape = true;
+
   system.defaults = {
     dock.autohide = true;
     loginwindow.GuestEnabled = false;
@@ -96,6 +99,10 @@
       FXEnableExtensionChangeWarning = false;
     };
   };
+
+  programs.fish.enable = true;
+
+  nix.settings.trusted-users = [ "@admin" ];
 
   nixpkgs.hostPlatform = "aarch64-darwin";
   nix.settings.experimental-features = "nix-command flakes";

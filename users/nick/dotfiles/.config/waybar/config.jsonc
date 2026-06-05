@@ -1,0 +1,108 @@
+{
+  "layer": "top",
+  "position": "top",
+  "modules-left": ["niri/workspaces"],
+  "modules-center": ["niri/window"],
+  "modules-right": [
+    "tray",
+    "pulseaudio",
+    "network",
+    "cpu",
+    "temperature",
+    "memory",
+    "custom/disk",
+    "custom/weather",
+    "clock",
+    "custom/syncthing",
+    "custom/power",
+  ],
+
+  "niri/workspaces": {
+    "format": "{value}",
+  },
+
+  "niri/window": {
+    "format": "{title}",
+    "icon": true,
+    "icon-size": 18,
+  },
+
+  "clock": {
+    "format": "{:%a %b %d  %I:%M %p}",
+    "tooltip-format": "<tt>{calendar}</tt>",
+    "calendar": {
+      "format": {
+        "today": "<b><u>{}</u></b>",
+      },
+    },
+  },
+
+  "pulseaudio": {
+    "format": "{volume}% {icon}",
+    "format-muted": "muted 󰖁",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"],
+    },
+    "on-click": "/run/current-system/sw/bin/pavucontrol",
+    "on-click-right": "/run/current-system/sw/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+  },
+
+  "network": {
+    "format-wifi": "{essid} ({signalStrength}%) 󰤨",
+    "format-ethernet": "{ipaddr}/{cidr} 󰈀",
+    "format-disconnected": "disconnected 󰤭",
+    "tooltip-format": "{ifname} via {gwaddr}",
+  },
+
+  "cpu": {
+    "format": "{usage}% 󰻠",
+    "interval": 5,
+  },
+
+  "temperature": {
+    "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
+    "input-filename": "temp1_input",
+    "format": "{temperatureF}°F {icon}",
+    "format-icons": ["󱃃", "󰔏", "󱃂"],
+    "critical-threshold": 176,
+  },
+
+  "memory": {
+    "format": "{}% 󰍛",
+    "interval": 5,
+  },
+
+  "tray": {
+    "icon-size": 18,
+    "spacing": 8,
+  },
+
+  "custom/disk": {
+    "exec": "df -h / | awk 'NR==2 {print $5}'",
+    "format": "{} 󰋊",
+    "tooltip-format": "/: {}",
+    "interval": 30,
+  },
+
+  "custom/weather": {
+    "exec": "/home/nick/.config/waybar/weather.sh",
+    "return-type": "json",
+    "interval": 900,
+  },
+
+  "custom/syncthing": {
+    "exec": "/home/nick/.config/waybar/syncthing-status.sh",
+    "return-type": "json",
+    "interval": 30,
+    "on-click": "/etc/profiles/per-user/nick/bin/curl -s -X POST -H \"X-API-Key: $(/run/current-system/sw/bin/syncthing cli config gui apikey get)\" http://localhost:8384/rest/db/scan",
+    "on-click-right": "/run/current-system/sw/bin/chromium --new-window http://localhost:8384",
+  },
+
+  "custom/power": {
+    "format": "{}",
+    "return-type": "json",
+    "exec": "printf '{\"text\": \"⏻\", \"tooltip\": \"Uptime: %s\"}' \"$(uptime | awk -F'up ' '{print $2}' | cut -d, -f1 | xargs)\"",
+    "interval": 60,
+    "on-click": "/home/nick/.config/waybar/power-menu.sh",
+  },
+}

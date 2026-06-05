@@ -1,7 +1,29 @@
 { config, pkgs, ... }:
+let
+  shellAliases = {
+    "l." = if pkgs.stdenv.isDarwin then "ls -d .*" else "ls -d .* --color=auto";
+    ll = if pkgs.stdenv.isDarwin then "ls -l" else "ls -l --color=auto";
+    ls = if pkgs.stdenv.isDarwin then "ls -G" else "ls --color=auto";
+    grep = "grep --color=auto";
+
+    myip = "curl -fsS https://httpbin.org/ip | jq -r .origin";
+    dudu = "du -hd1 | sort -h; ls -Slh | tail -n +2 | head -3";
+    hd = "curl -I -X GET";
+    tmux-peak = "tmux capture-pane -p";
+    ls-ports = "sudo lsof -i -P -n | grep LISTEN";
+    find-non-ascii = "rg \"[^[:ascii:]]\"";
+    find-files-since-boot = "sudo find / -xdev -type f -newer /tmp/since-boot";
+    cd-obsidian = "cd ~/Library/Mobile\\ Documents/iCloud~md~obsidian/Documents";
+
+    dotenv = "npx -y dotenv-cli -e .env --";
+    claude-yolo = "claude --dangerously-skip-permissions";
+    codex-yolo = "codex --dangerously-bypass-approvals-and-sandbox";
+  };
+in
 {
   home.packages = with pkgs; [
     bat
+    bun
     curl
     fd
     gh
@@ -13,6 +35,7 @@
     unzip
     uv
     wget
+    duckdb
   ];
 
   # Add ~/.local/bin to PATH
@@ -52,38 +75,7 @@
         fi
       fi
     '';
-    shellAliases = {
-      "l." = if pkgs.stdenv.isDarwin then "ls -d .*" else "ls -d .* --color=auto";
-      ll = if pkgs.stdenv.isDarwin then "ls -l" else "ls -l --color=auto";
-      ls = if pkgs.stdenv.isDarwin then "ls -G" else "ls --color=auto";
-
-      myip = "curl -fsS https://httpbin.org/ip | jq -r .origin";
-      dudu = "du -hd1 | sort -h; ls -Slh | tail -n +2 | head -3";
-      dudu2 = "sudo tree -xh --du | grep -E '^(├──|└──)\\s+.*'";
-      hd = "curl -I -X GET";
-      tmux-peak = "tmux capture-pane -p";
-      ls-ports = "sudo lsof -i -P -n | grep LISTEN";
-      find-emdash = "rg '—' .";
-      find-files-since-boot = "sudo find / -xdev -type f -newer /tmp/since-boot";
-      cd-obsidian = "cd '~/Library/Mobile Documents/iCloud~md~obsidian/Documents'";
-
-      dotenv = "npx -y dotenv-cli -e .env --";
-      claude-yolo = "claude --dangerously-skip-permissions";
-      gemini = "npx -y @google/gemini-cli";
-      gemini-yolo = "npx -y @google/gemini-cli --yolo";
-      codex = "npx -y @openai/codex --search";
-      codex-yolo = "npx -y @openai/codex --dangerously-bypass-approvals-and-sandbox";
-
-      egrep = "grep -E --color=auto";
-      fgrep = "grep -F --color=auto";
-      grep = "grep --color=auto";
-      xzegrep = "xzegrep --color=auto";
-      xzfgrep = "xzfgrep --color=auto";
-      xzgrep = "xzgrep --color=auto";
-      zegrep = "zegrep --color=auto";
-      zfgrep = "zfgrep --color=auto";
-      zgrep = "zgrep --color=auto";
-    };
+    inherit shellAliases;
   };
 
   # Fish configuration.
@@ -91,7 +83,32 @@
     enable = true;
     interactiveShellInit = ''
       set fish_greeting # Disable greeting
+      fish_vi_key_bindings
+
+      # Add SSH keys to the agent if not already added.
+      if test -f ~/.ssh/id_ed25519
+        if not set -q SSH_AUTH_SOCK
+          eval (ssh-agent -c)
+        end
+        ssh-add -l >/dev/null 2>&1; or ssh-add ~/.ssh/id_ed25519
+      end
+
+      # Load Homebrew environment if on macOS and Homebrew is installed.
+      if not set -q HOMEBREW_PREFIX
+        if test -f /opt/homebrew/bin/brew
+          eval (/opt/homebrew/bin/brew shellenv)
+        end
+      end
+
+      # Helper function to load .env files
+      function load_env
+        for line in (cat $argv | string match -rv '^#|^$')
+          set -l item (string split -m 1 = $line)
+          set -gx $item[1] $item[2]
+        end
+      end
     '';
+    inherit shellAliases;
   };
 
   # Starship configuration for a customizable prompt.
@@ -102,9 +119,9 @@
   # FZF configuration.
   programs.fzf = {
     enable = true;
-    defaultCommand = "fd --type f --strip-cwd-prefix";
-    changeDirWidgetCommand = "fd --type d --strip-cwd-prefix";
-    fileWidgetCommand = "fd --type f --strip-cwd-prefix";
+    defaultCommand = "fd --follow --hidden --type f --strip-cwd-prefix";
+    changeDirWidgetCommand = "fd --follow --hidden --type d --strip-cwd-prefix";
+    fileWidgetCommand = "fd --follow --hidden --type f --strip-cwd-prefix";
   };
 
   # Direnv configuration for automatic environment loading.

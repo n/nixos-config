@@ -17,6 +17,12 @@
 
 - Details -> Private Wi-Fi Address: Off
 
+## Set default shell to bash
+
+```bash
+chsh -s /bin/bash
+```
+
 ## Configure Sudo
 
 ```bash
@@ -52,6 +58,4 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 ```bash
 git clone nick@home.lab.internal:git/nixos-config.git
 cd nixos-config
-echo "/run/current-system/sw/bin/bash" | sudo tee -a /etc/shells
-chsh -s /run/current-system/sw/bin/bash
 ```

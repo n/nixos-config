@@ -1,5 +1,5 @@
 let
-  keys = import ./keys.nix;
+  keys = import ../../data/keys.nix;
 in
 {
   security.sudo.wheelNeedsPassword = false;

@@ -1,13 +1,23 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  ...
+}:
 {
   environment = {
     systemPackages = with pkgs; [
       # Sway and related packages
       i3status
-      kitty # for i3
+      kitty
       rofi
       wl-clipboard
       mako
+
+      # Niri
+      fuzzel
+      swaybg
+      waybar
+      xwayland-satellite
 
       # Graphical applications
       code-cursor
@@ -20,9 +30,6 @@
       pavucontrol
       ungoogled-chromium
       vscode
-
-      # TUIs
-      claude-code
     ];
   };
 
@@ -34,7 +41,6 @@
       "steam"
       "steam-unwrapped"
       "vscode"
-      "claude-code"
     ];
 
   # Enable flatpak.
@@ -74,7 +80,7 @@
   ]
   ++ [ "${pkgs.gdm}/share/gdm/greeter-dconf-defaults" ];
 
-  # Add/override keys in the default “user” profile.
+  # Add/override keys in the default 'user' profile.
   programs.dconf.profiles.user.databases = [
     {
       settings = {
@@ -94,4 +100,7 @@
     package = pkgs.swayfx;
     wrapperFeatures.gtk = true;
   };
+
+  # Enable Niri.
+  programs.niri.enable = true;
 }

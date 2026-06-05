@@ -21,3 +21,10 @@ keybind = shift+enter=text:\n
 # Disable warnings
 clipboard-paste-protection = false
 confirm-close-surface = false
+
+# Command finish notifications
+notify-on-command-finish = unfocused
+notify-on-command-finish-action = no-bell,notify
+notify-on-command-finish-after = 30s
+
+command = /etc/profiles/per-user/nick/bin/fish

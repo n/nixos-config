@@ -1,0 +1,44 @@
+* {
+  font-family: "JetBrains Mono", "Hack Nerd Font";
+  font-size: 14px;
+}
+
+window#waybar {
+  background-color: #0b0b0b;
+  color: #cdd6f4;
+}
+
+#clock,
+#pulseaudio,
+#network,
+#cpu,
+#temperature,
+#memory,
+#custom-disk,
+#custom-weather,
+#custom-syncthing,
+#custom-power {
+  padding: 0 10px;
+}
+
+#pulseaudio.muted {
+  color: #585b70;
+}
+
+#custom-syncthing.warning {
+  color: #ffc87f;
+}
+
+#custom-syncthing.error {
+  color: #f38ba8;
+}
+
+#workspaces button {
+  color: #585b70;
+  padding: 0 8px;
+}
+
+#workspaces button.focused,
+#workspaces button.active {
+  color: #cdd6f4;
+}

@@ -3,6 +3,7 @@
   environment.persistence."/nix/persist" = {
     hideMounts = true;
     directories = [
+      "/etc/ssh"
       "/var/cron"
       "/var/log"
       "/var/lib/docker"
@@ -10,6 +11,9 @@
       "/var/lib/sbctl"
       "/var/lib/systemd/coredump"
       "/var/lib/tailscale"
+    ];
+    files = [
+      "/etc/machine-id"
     ];
     users.nick = {
       directories = [

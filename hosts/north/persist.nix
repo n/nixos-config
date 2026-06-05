@@ -23,7 +23,6 @@
 
     users.nick = {
       directories = [
-        "code"
         "Downloads"
         "sync"
 
@@ -46,6 +45,7 @@
         ".cursor"
         ".mozilla"
         ".obsidian"
+        ".pi"
         ".vscode"
       ];
 

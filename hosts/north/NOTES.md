@@ -61,7 +61,8 @@ nixos-install --root /mnt --no-root-passwd --flake .#north
 
 ```bash
 sbctl create-keys
-systemd-cryptenroll /dev/disk/by-partlabel/NIX --tpm2-device=auto --tpm2-pcrs=7 --wipe-slot=tpm2
+systemd-cryptenroll /dev/disk/by-partlabel/NIX --wipe-slot=tpm2
+systemd-cryptenroll /dev/disk/by-partlabel/NIX --tpm2-device=auto --tpm2-pcrs=7
 ```
 
 ## Discover files in tmpfs that should be persisted
@@ -71,3 +72,7 @@ touch /tmp/now
 # Do something
 sudo find / -xdev -type f -newer /tmp/now
 ```
+
+## Display notes
+
+- [KVM switch causes black screen with Niri](docs/kvm-switch-niri.md)

@@ -2,7 +2,12 @@
   description = "Nick's Nix";
 
   inputs = {
+    # Temporary pin before GDM 50.0; see NixOS/nixpkgs#523332.
+    nixpkgs.url = "github:NixOS/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb";
+
     impermanence.url = "github:nix-community/impermanence";
+    impermanence.inputs.nixpkgs.follows = "";
+    impermanence.inputs.home-manager.follows = "";
 
     nix-darwin.url = "github:LnL7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
@@ -18,37 +23,35 @@
 
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+
+    niri.url = "github:niri-wm/niri/f9f43d826ab4014a7c302be28d7da33e12f5be37";
+    niri.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    {
-      nixpkgs,
-      flake-utils,
-      nix-darwin,
-      home-manager,
-      treefmt-nix,
-      impermanence,
-      lanzaboote,
-      nix-index-database,
-      ...
-    }:
+    { nixpkgs, ... }@inputs:
     let
+      forAllSystems = nixpkgs.lib.genAttrs [
+        "x86_64-linux"
+        "aarch64-darwin"
+      ];
+
       homeManagerConfig = hostname: {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
-        home-manager.extraSpecialArgs = { inherit hostname; };
-        home-manager.sharedModules = [ nix-index-database.homeModules.nix-index ];
+        home-manager.extraSpecialArgs = { inherit hostname inputs; };
+        home-manager.sharedModules = [ inputs.nix-index-database.homeModules.nix-index ];
         home-manager.users.nick = import ./users/nick;
       };
 
       mkDarwin =
         hostname:
-        nix-darwin.lib.darwinSystem {
+        inputs.nix-darwin.lib.darwinSystem {
           specialArgs = { inherit hostname; };
           modules = [
             ./hosts/darwin-common
-            nix-index-database.darwinModules.nix-index
-            home-manager.darwinModules.home-manager
+            inputs.nix-index-database.darwinModules.nix-index
+            inputs.home-manager.darwinModules.home-manager
             {
               users.users.nick.home = "/Users/nick";
               system.primaryUser = "nick";
@@ -58,11 +61,11 @@
         };
 
       commonNixosModules = hostname: [
-        nix-index-database.nixosModules.nix-index
-        home-manager.nixosModules.home-manager
-        lanzaboote.nixosModules.lanzaboote
-        impermanence.nixosModules.impermanence
-        ./common/users.nix
+        inputs.nix-index-database.nixosModules.nix-index
+        inputs.home-manager.nixosModules.home-manager
+        inputs.lanzaboote.nixosModules.lanzaboote
+        inputs.impermanence.nixosModules.impermanence
+        ./hosts/nixos-common
         (homeManagerConfig hostname)
       ];
     in
@@ -74,38 +77,29 @@
 
       nixosConfigurations = {
         home = nixpkgs.lib.nixosSystem {
-          modules = [
-            ./hosts/home/configuration.nix
-            ./hosts/home/persist.nix
-          ]
-          ++ (commonNixosModules "home");
+          modules = [ ./hosts/home ] ++ (commonNixosModules "home");
         };
 
         north = nixpkgs.lib.nixosSystem {
           modules = [
-            ./hosts/north/configuration.nix
-            ./hosts/north/wayland.nix
-            ./hosts/north/syncthing.nix
-            ./hosts/north/persist.nix
+            { nixpkgs.overlays = [ inputs.niri.overlays.default ]; }
+            ./hosts/north
           ]
           ++ (commonNixosModules "north");
         };
       };
-    }
-    // flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-        treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
-      in
-      {
-        # Note: Using flake-utils.lib.eachDefaultSystem with // creates outputs like:
-        # { x86_64-linux = { formatter = ..., devShells = ... } }
-        # While the standard flake schema would be:
-        # { formatter = { x86_64-linux = ... }, devShells = { x86_64-linux = ... } }
-        # Nix commands are tolerant of both structures, so this works fine for most purposes.
-        formatter = treefmtEval.config.build.wrapper;
-        devShells = {
+      formatter = forAllSystems (
+        system:
+        (inputs.treefmt-nix.lib.evalModule nixpkgs.legacyPackages.${system} ./treefmt.nix)
+        .config.build.wrapper
+      );
+
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
           default = pkgs.mkShell {
             name = "nix";
             buildInputs = with pkgs; [
@@ -117,7 +111,7 @@
               '')
             ];
           };
-        };
-      }
-    );
+        }
+      );
+    };
 }

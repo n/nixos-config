@@ -1,0 +1,18 @@
+font=JetBrains Mono 12
+format=<b>%s</b>\n%b
+group-by=app-name
+background-color=#cdd6f4
+text-color=#0B0B0B
+border-color=#0B0B0B
+border-size=2
+border-radius=12
+on-button-left=dismiss
+on-button-right=dismiss-group
+width=450
+height=500
+
+[urgency=low]
+border-color=#505050
+
+[urgency=critical]
+border-color=#f38ba8

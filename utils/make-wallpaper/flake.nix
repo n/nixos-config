@@ -43,8 +43,8 @@
 
           shellHook = ''
             cat <<'EOF'
-Usage: make-wallpaper [output-path]
-EOF
+            Usage: make-wallpaper [output-path]
+            EOF
           '';
         };
       }

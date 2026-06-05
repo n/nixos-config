@@ -1,7 +1,12 @@
 .git
 node_modules
+.config
+.local
+.cache
+.npm
 
 Applications
+Documents
 Library
 Pictures
 Movies
